@@ -93,8 +93,7 @@ function App() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("job_description", jd);
-      const res = await axios.post("http://127.0.0.1:8000/analyze", formData);
-      setResult(res.data);
+      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);      setResult(res.data);
     } catch (err) {
       setError("Something went wrong. Check the backend terminal for details.");
       console.error(err);
