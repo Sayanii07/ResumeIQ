@@ -1,4 +1,7 @@
 # ResumeIQ — AI-Powered Resume & ATS Analyzer
+### 🔗 [Live Demo](https://resumeiq-frontend-fkz8.onrender.com)
+
+> Note: hosted on Render's free tier — if the app has been inactive, the first load may take 30–60 seconds while the backend wakes up.
 
 ResumeIQ analyzes how well a resume matches a job description, the way an ATS (Applicant Tracking System) and a recruiter would. Upload a resume (PDF or DOCX), paste a job description, and get an instant match score, skill gap breakdown, and tailored improvement suggestions.
 
