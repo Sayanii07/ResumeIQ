@@ -26,10 +26,7 @@ ResumeIQ analyzes how well a resume matches a job description, the way an ATS (A
 **Frontend**
 - React (Vite)
 - styled-components
-
-## Screenshots
-
-*(Add a screenshot of the homepage and results page here)*
+- Javascript
 
 ## Running Locally
 
