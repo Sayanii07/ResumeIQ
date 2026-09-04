@@ -6,7 +6,6 @@
 ResumeIQ analyzes how well a resume matches a job description, the way an ATS (Applicant Tracking System) and a recruiter would. Upload a resume (PDF or DOCX), paste a job description, and get an instant match score, skill gap breakdown, and tailored improvement suggestions.
 
 ## Features
-
 - 📄 Resume upload — supports PDF and DOCX
 - 🎯 ATS match score out of 100
 - ✅ Matched skills detection
@@ -39,7 +38,6 @@ pip install fastapi uvicorn python-multipart pdfplumber python-docx requests pyt
 ```
 
 Create a `.env` file inside `backend/`:
-
 
 Run the server:
 ```bash
