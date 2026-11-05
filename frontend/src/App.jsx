@@ -12,6 +12,8 @@ import {
 WhySection, WhyInner, WhyTitle, WhyGrid, WhyItem, WhyIconWrap, WhyItemTitle, WhyItemDesc,
 } from "./App.styles";
 
+import {SemanticNote } from "./App.styles";
+
 function ResumeIllustration() {
   return (
     <svg width="280" height="330" viewBox="0 0 280 330" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -93,7 +95,7 @@ function App() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("job_description", jd);
-      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);      setResult(res.data);
+      const res = await axios.post("http://127.0.0.1:8000/analyze", formData);
     } catch (err) {
       setError("Something went wrong. Check the backend terminal for details.");
       console.error(err);
@@ -177,14 +179,20 @@ function App() {
       {result && (
         <ResultCard>
           <StampWrap>
-            <ScoreStamp $color={getScoreColor(result.match_score)}>
-              <StampNumber $color={getScoreColor(result.match_score)}>
-                {result.match_score}
+            <ScoreStamp $color={getScoreColor(result.ai_match_score)}>
+              <StampNumber $color={getScoreColor(result.ai_match_score)}>
+                {result.ai_match_score}
               </StampNumber>
               <StampOutOf>/100</StampOutOf>
               <StampLabel>ATS match</StampLabel>
             </ScoreStamp>
           </StampWrap>
+
+          <SemanticNote>
+            Semantic similarity: <strong>{result.semantic_similarity_score}%</strong>.
+            How close your resume's meaning is to the job description, computed
+            with embeddings.
+          </SemanticNote>
 
           <Summary>{result.summary}</Summary>
 

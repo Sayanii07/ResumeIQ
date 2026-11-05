@@ -600,3 +600,16 @@ export const FooterBottom = styled.div`
   color: #8A8299;
   text-align: center;
 `;
+
+export const SemanticNote = styled.p`
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #5B5560;
+  max-width: 460px;
+  margin: 0 auto 24px;
+
+  strong {
+    color: #5B21B6;
+  }
+`;
