@@ -3,11 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber, requests, os, json
 from docx import Document
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer, util
+from semantic import semantic_analysis
 load_dotenv()
 app = FastAPI()
 
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 app.add_middleware(
@@ -26,10 +25,7 @@ def extract_docx_text(file):
     doc = Document(file.file)
     return "\n".join(para.text for para in doc.paragraphs if para.text.strip())
 
-def compute_semantic_score(resume_text, jd_text):
-    embeddings = embedder.encode([resume_text, jd_text], convert_to_tensor=True)
-    similarity = util.cos_sim(embeddings[0], embeddings[1]).item()
-    return round(similarity * 100, 1)
+
 
 
 @app.get("/")
@@ -51,7 +47,15 @@ async def analyze(resume: UploadFile, job_description: str = Form(...)):
     if not resume_text.strip():
         return {"error": "Couldn't read any text from this file. Try a different resume file."}
 
-    prompt = f"""Compare this RESUME with this JOB DESCRIPTION.
+    prompt = f"""You are an expert technical recruiter.
+Compare the RESUME with the JOB DESCRIPTION.
+
+Rules:
+- A skill is "missing" only if it does not appear anywhere in the resume, including Skills, Projects, and Experience sections.
+- If the JD says "X or Y", the requirement is met if the resume has either one.
+- Do not list a skill as both matched and missing.
+- Do not include generic items such as salary, benefits, or working hours as skills.
+
 Return ONLY valid JSON with keys: match_score (0-100 integer), matched_skills (array), missing_skills (array), summary (string), suggestions (array).
 
 RESUME:
@@ -70,17 +74,18 @@ JOB DESCRIPTION:
         }
     )
     response_json = r.json()
-    print("GROQ RESPONSE:", response_json)  # debug line
 
     if "choices" not in response_json:
         return {"error": "Groq API failed", "details": response_json}
 
     ai_result = json.loads(response_json["choices"][0]["message"]["content"])
-    semantic_score = compute_semantic_score(resume_text, job_description)
+    semantic = semantic_analysis(resume_text, job_description)
 
     return {
         "ai_match_score": ai_result["match_score"],
-        "semantic_similarity_score": semantic_score,
+        "semantic_similarity_score": semantic["semantic_similarity_score"],
+        "requirement_coverage": semantic["requirement_coverage"],
+        "weakest_requirements": semantic["weakest_requirements"],
         "matched_skills": ai_result["matched_skills"],
         "missing_skills": ai_result["missing_skills"],
         "summary": ai_result["summary"],
