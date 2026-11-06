@@ -204,12 +204,6 @@ function App() {
             </Stat>
           </StatsRow>
 
-          <SemanticNote>
-            Semantic similarity: <strong>{result.semantic_similarity_score}%</strong>.
-            How close your resume's meaning is to the job description, computed
-            with embeddings.
-          </SemanticNote>
-
           <Summary>{result.summary}</Summary>
 
           <SectionBlock>

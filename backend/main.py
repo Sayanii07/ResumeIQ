@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber, requests, os, json
 from docx import Document
 from dotenv import load_dotenv
+
 from semantic import semantic_analysis
+
 load_dotenv()
 app = FastAPI()
-
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,20 +17,51 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    return {"status": "ResumeIQ API is running"}
+
+
 def extract_pdf_text(file):
     with pdfplumber.open(file.file) as pdf:
         return "\n".join(page.extract_text() or "" for page in pdf.pages)
+
 
 def extract_docx_text(file):
     doc = Document(file.file)
     return "\n".join(para.text for para in doc.paragraphs if para.text.strip())
 
 
+def call_groq(prompt, attempts=3):
+    last_error = "unknown error"
+    for _ in range(attempts):
+        r = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}"},
+            json={
+                "model": "openai/gpt-oss-20b",
+                "messages": [{"role": "user", "content": prompt}],
+                "response_format": {"type": "json_object"},
+                "reasoning_effort": "low",
+                "max_completion_tokens": 4000,
+            },
+            timeout=60,
+        )
+        data = r.json()
 
+        if "choices" in data:
+            try:
+                return json.loads(data["choices"][0]["message"]["content"]), None
+            except (json.JSONDecodeError, KeyError, TypeError):
+                last_error = "unreadable answer"
+                continue
 
-@app.get("/")
-def root():
-    return {"status": "ResumeIQ API is running"}
+        err = data.get("error", {})
+        last_error = err.get("message", "unknown error")
+        if err.get("code") != "json_validate_failed":
+            break  # rate limit, bad key, etc.: retrying won't help
+
+    return None, last_error
 
 
 @app.post("/analyze")
@@ -64,30 +95,21 @@ RESUME:
 JOB DESCRIPTION:
 {job_description}"""
 
-    r = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}"},
-        json={
-            "model": "openai/gpt-oss-20b",
-            "messages": [{"role": "user", "content": prompt}],
-            "response_format": {"type": "json_object"}
-        }
-    )
-    response_json = r.json()
+    ai_result, ai_error = call_groq(prompt)
 
-    if "choices" not in response_json:
-        return {"error": "Groq API failed", "details": response_json}
+    if ai_result is None:
+        print("GROQ ERROR:", ai_error)
+        return {"error": "The AI service had trouble generating the analysis. Please try again in a moment."}
 
-    ai_result = json.loads(response_json["choices"][0]["message"]["content"])
     semantic = semantic_analysis(resume_text, job_description)
 
     return {
-        "ai_match_score": ai_result["match_score"],
+        "ai_match_score": ai_result.get("match_score", 0),
         "semantic_similarity_score": semantic["semantic_similarity_score"],
         "requirement_coverage": semantic["requirement_coverage"],
         "weakest_requirements": semantic["weakest_requirements"],
-        "matched_skills": ai_result["matched_skills"],
-        "missing_skills": ai_result["missing_skills"],
-        "summary": ai_result["summary"],
-        "suggestions": ai_result["suggestions"],
+        "matched_skills": ai_result.get("matched_skills", []),
+        "missing_skills": ai_result.get("missing_skills", []),
+        "summary": ai_result.get("summary", ""),
+        "suggestions": ai_result.get("suggestions", []),
     }
