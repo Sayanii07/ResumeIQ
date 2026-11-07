@@ -13,6 +13,8 @@ import {
   EvidenceReq, EvidenceLine, EvidenceScore,
 } from "./App.styles";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://resumeiq-backend-tbvb.onrender.com";
+
 
 function ResumeIllustration() {
   return (
@@ -95,7 +97,7 @@ function App() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("job_description", jd);
-      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);
+      const res = await axios.post(`${API_URL}/analyze`, formData);
       if (res.data.error) {
         setError(typeof res.data.error === "string" ? res.data.error : "Analysis failed. Please try again.");
         return;
