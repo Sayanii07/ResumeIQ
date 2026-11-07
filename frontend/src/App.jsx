@@ -95,7 +95,7 @@ function App() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("job_description", jd);
-      const res = await axios.post("http://127.0.0.1:8000/analyze", formData);
+      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);
       if (res.data.error) {
         setError(typeof res.data.error === "string" ? res.data.error : "Analysis failed. Please try again.");
         return;
@@ -234,18 +234,20 @@ function App() {
           </SectionBlock>
 
 
-          <SectionBlock>
-            <SectionTitle>Closest evidence per requirement</SectionTitle>
-            {result.weakest_requirements.map((item, i) => (
-              <EvidenceItem key={i}>
-                <EvidenceReq>
-                  {item.requirement}
-                  <EvidenceScore>{item.similarity}% match</EvidenceScore>
-                </EvidenceReq>
-                <EvidenceLine>Closest resume line: {item.closest_resume_line}</EvidenceLine>
-              </EvidenceItem>
-            ))}
-          </SectionBlock>
+          {(result.weakest_requirements || []).length > 0 && (
+            <SectionBlock>
+              <SectionTitle>Requirements not clearly covered</SectionTitle>
+              {result.weakest_requirements.map((item, i) => (
+                <EvidenceItem key={i}>
+                  <EvidenceReq>
+                    {item.requirement}
+                    <EvidenceScore>{item.similarity}% match</EvidenceScore>
+                  </EvidenceReq>
+                  <EvidenceLine>Closest resume line: {item.closest_resume_line}</EvidenceLine>
+                </EvidenceItem>
+              ))}
+            </SectionBlock>
+          )}
 
 
 

@@ -44,6 +44,7 @@ def call_groq(prompt, attempts=3):
                 "response_format": {"type": "json_object"},
                 "reasoning_effort": "low",
                 "max_completion_tokens": 4000,
+                "temperature": 0,
             },
             timeout=60,
         )
