@@ -600,3 +600,63 @@ export const FooterBottom = styled.div`
   color: #8A8299;
   text-align: center;
 `;
+
+/* ---------- Semantic results ---------- */
+
+export const StatsRow = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+`;
+
+export const Stat = styled.div`
+  text-align: center;
+`;
+
+export const StatValue = styled.p`
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: #5B21B6;
+  margin: 0;
+`;
+
+export const StatLabel = styled.p`
+  font-size: 12px;
+  line-height: 1.4;
+  color: #5B5560;
+  margin-top: 4px;
+  max-width: 170px;
+`;
+
+export const EvidenceItem = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid #F0EBFB;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const EvidenceReq = styled.p`
+  font-size: 14px;
+  font-weight: 600;
+  color: #211F26;
+  margin: 0 0 4px;
+`;
+
+export const EvidenceLine = styled.p`
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5B5560;
+  margin: 0;
+`;
+
+export const EvidenceScore = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: #5B21B6;
+  margin-left: 8px;
+`;

@@ -9,8 +9,10 @@ import {
   SkillMark, SkillText, SuggestionList, FooterSection, FooterInner,
   FooterBrand, FooterLogoWrap, FooterLogoMark, FooterLogoText, FooterTagline,
   FooterCol, FooterColTitle, FooterLink, FooterBottom,HowSection, HowTitle, StepsRow, StepConnector, Step, StepNumber, StepTitle, StepDesc,
-WhySection, WhyInner, WhyTitle, WhyGrid, WhyItem, WhyIconWrap, WhyItemTitle, WhyItemDesc,
+  WhySection, WhyInner, WhyTitle, WhyGrid, WhyItem, WhyIconWrap, WhyItemTitle, WhyItemDesc,StatsRow, Stat, StatValue, StatLabel, EvidenceItem, 
+  EvidenceReq, EvidenceLine, EvidenceScore,
 } from "./App.styles";
+
 
 function ResumeIllustration() {
   return (
@@ -93,14 +95,19 @@ function App() {
       const formData = new FormData();
       formData.append("resume", resume);
       formData.append("job_description", jd);
-      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);      setResult(res.data);
-    } catch (err) {
-      setError("Something went wrong. Check the backend terminal for details.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const res = await axios.post("https://resumeiq-backend-tbvb.onrender.com/analyze", formData);
+      if (res.data.error) {
+        setError(typeof res.data.error === "string" ? res.data.error : "Analysis failed. Please try again.");
+        return;
+      }
+    setResult(res.data);
+        } catch (err) {
+          setError("Something went wrong. Check the backend terminal for details.");
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
 
   const getScoreColor = (score) => {
     if (score >= 75) return "#5B21B6";
@@ -177,14 +184,25 @@ function App() {
       {result && (
         <ResultCard>
           <StampWrap>
-            <ScoreStamp $color={getScoreColor(result.match_score)}>
-              <StampNumber $color={getScoreColor(result.match_score)}>
-                {result.match_score}
+            <ScoreStamp $color={getScoreColor(result.ai_match_score)}>
+              <StampNumber $color={getScoreColor(result.ai_match_score)}>
+                {result.ai_match_score}
               </StampNumber>
               <StampOutOf>/100</StampOutOf>
               <StampLabel>ATS match</StampLabel>
             </ScoreStamp>
           </StampWrap>
+
+          <StatsRow>
+            <Stat>
+              <StatValue>{result.semantic_similarity_score}%</StatValue>
+              <StatLabel>Semantic similarity between your resume and the job</StatLabel>
+            </Stat>
+            <Stat>
+              <StatValue>{result.requirement_coverage}%</StatValue>
+              <StatLabel>Job requirements with a close match in your resume</StatLabel>
+            </Stat>
+          </StatsRow>
 
           <Summary>{result.summary}</Summary>
 
@@ -214,6 +232,24 @@ function App() {
               ))
             )}
           </SectionBlock>
+
+
+          {(result.weakest_requirements || []).length > 0 && (
+            <SectionBlock>
+              <SectionTitle>Requirements not clearly covered</SectionTitle>
+              {result.weakest_requirements.map((item, i) => (
+                <EvidenceItem key={i}>
+                  <EvidenceReq>
+                    {item.requirement}
+                    <EvidenceScore>{item.similarity}% match</EvidenceScore>
+                  </EvidenceReq>
+                  <EvidenceLine>Closest resume line: {item.closest_resume_line}</EvidenceLine>
+                </EvidenceItem>
+              ))}
+            </SectionBlock>
+          )}
+
+
 
           <SectionBlock>
             <SectionTitle>Suggestions</SectionTitle>
