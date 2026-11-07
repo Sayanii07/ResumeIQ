@@ -5,4 +5,4 @@ pdfplumber
 python-docx
 requests
 python-dotenv
-sentence-transformers
+fastembed
